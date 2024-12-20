@@ -5,6 +5,7 @@ import {
 	MaterialCommunityIcons,
 	MaterialIcons,
 } from "@expo/vector-icons";
+import Slider from "@react-native-community/slider";
 import { router, useLocalSearchParams } from "expo-router";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
 
@@ -62,6 +63,24 @@ export default function MediationDetails() {
 								color="#3A3937"
 							/>
 						</View>
+
+						{/* Playback slider */}
+						<Slider
+							onSlidingComplete={(value) => console.log("slider value", value)}
+							style={{ height: 3, width: "100%" }}
+							value={0.5}
+							minimumValue={0}
+							maximumValue={100}
+							minimumTrackTintColor="#3A3937"
+							maximumTrackTintColor="#3A393755"
+							thumbTintColor="#3A3937"
+						/>
+						{/* Timestamps-Duration: */}
+						<View className="flex-row  justify-between">
+							<Text className="text-zinc-800">00:00</Text>
+							<Text className="text-zinc-800">10:00</Text>
+						</View>
+						{/* TODO: resume from where you left: -1:40:30 */}
 					</View>
 				</View>
 			</View>
