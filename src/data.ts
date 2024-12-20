@@ -1,4 +1,4 @@
-import { Meditation } from "./types";
+import type { Meditation } from "./types";
 
 // generate a list of meditations with random titles(non generic) and durations, max 10. The title should be real meditation titles.
 export const meditations: Meditation[] = [
