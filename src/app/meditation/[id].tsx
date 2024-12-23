@@ -6,11 +6,16 @@ import {
 	MaterialIcons,
 } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
+import {
+	Audio,
+	type AVPlaybackStatus,
+	type AVPlaybackStatusSuccess,
+} from "expo-av";
 import { router, useLocalSearchParams } from "expo-router";
 import { Pressable, SafeAreaView, Text, View } from "react-native";
-import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 
 import audio1 from "@assets/meditations/audio1.mp3";
+import { useEffect, useState } from "react";
 
 /**
  *
@@ -22,11 +27,55 @@ import audio1 from "@assets/meditations/audio1.mp3";
 
 export default function MediationDetails() {
 	const { id } = useLocalSearchParams<{ id: string }>();
-	const player = useAudioPlayer(audio1);
-	const status = useAudioPlayerStatus(player);
-
+	const [sound, setSound] = useState<Audio.Sound>(() => new Audio.Sound());
+	const [status, setStatus] = useState<AVPlaybackStatusSuccess | undefined>();
+	const [isPlaying, setIsPlaying] = useState(false);
+	const [error, setError] = useState<string | undefined>(undefined);
 	const mediation = meditations.find((m) => m.id === Number(id));
-	// const [playerStatus, setPlayerStatus] = useState('stopped');
+	const duration = Number(status?.durationMillis || 0);
+	const currentTime = Number(status?.positionMillis || 0);
+
+	const onPlaybackStatusUpdate = (status: AVPlaybackStatus) => {
+		if (!status.isLoaded) {
+			setError(status.error);
+			return;
+		}
+
+		setIsPlaying(status.isPlaying);
+		setStatus(status);
+	};
+
+	const onPlayPause = async () => {
+		console.log(`[onPlayPause] >> sound: ${sound ? "found" : "not found"}`);
+
+		console.log("[onPlayPause] >>", isPlaying);
+
+		if (!sound) {
+			return;
+		}
+		if (isPlaying) {
+			await sound.pauseAsync();
+		} else {
+			await sound.playAsync();
+		}
+	};
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	useEffect(() => {
+		const playSound = async () => {
+			const { sound } = await Audio.Sound.createAsync(audio1);
+			setSound(sound);
+
+			sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
+		};
+
+		playSound();
+	}, []);
+
+	useEffect(() => {
+		console.log("[useEffect] >> Unloading sound");
+		sound ? () => sound.unloadAsync() : undefined;
+	}, [sound]);
 
 	const formatSeconds = (milliseconds: number) => {
 		const totalSeconds = Math.floor(milliseconds / 1000);
@@ -55,7 +104,10 @@ export default function MediationDetails() {
 						</View>
 
 						<AntDesign
-							onPress={() => router.back()}
+							onPress={async () => {
+								await sound.unloadAsync();
+								router.back();
+							}}
 							name="close"
 							size={24}
 							color="black"
@@ -66,17 +118,18 @@ export default function MediationDetails() {
 						{mediation.title}: ({mediation.duration} min)
 					</Text>
 					<Text className="text-center text-zinc-800">
-						Current time: {formatSeconds(status.currentTime)}
+						Current time: {formatSeconds(currentTime)}, playing:{" "}
+						{isPlaying ? "Yes" : "No"}
 					</Text>
 				</View>
 
 				{/* Play/Pause button */}
 				<Pressable
-					onPress={() => (player.playing ? player.pause() : player.play())}
+					onPress={onPlayPause}
 					className="bg-zinc-800 self-center w-20 aspect-square rounded-full items-center justify-center"
 				>
 					<FontAwesome6
-						name={status.playing ? "pause" : "play"}
+						name={isPlaying ? "pause" : "play"}
 						size={24}
 						color="snow"
 					/>
@@ -98,10 +151,10 @@ export default function MediationDetails() {
 						{/* Playback slider */}
 						<Slider
 							onSlidingComplete={(value) => {
-								player.seekTo(value * status.duration);
+								sound.setPositionAsync(value * Number(duration));
 							}}
 							style={{ height: 3, width: "100%" }}
-							value={status.currentTime / status.duration}
+							value={Number(currentTime) / Number(duration)}
 							minimumValue={0}
 							maximumValue={1}
 							minimumTrackTintColor="#3A3937"
@@ -111,10 +164,10 @@ export default function MediationDetails() {
 						{/* Timestamps-Duration: */}
 						<View className="flex-row  justify-between">
 							<Text className="text-zinc-800">
-								{formatSeconds(status.currentTime)}
+								{formatSeconds(Number(currentTime))}
 							</Text>
 							<Text className="text-zinc-800">
-								{formatSeconds(status.duration)}
+								{formatSeconds(Number(duration))}
 							</Text>
 						</View>
 						{/* TODO: resume from where you left: -1:40:30 */}
