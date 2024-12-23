@@ -22,7 +22,7 @@ import { useEffect, useState } from "react";
  * TODO:
  * 1. Wait for apple dev account enrollment email status
  * 2. Build the app locally in order to fix `Cannot find module 'ExpoAudio'` error message
- * 3. Continue from where you left off at -1:24:19
+ * 3. Revert back to using `expo-audio` package
  */
 
 export default function MediationDetails() {
