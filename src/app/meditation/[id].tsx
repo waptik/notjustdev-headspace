@@ -11,6 +11,7 @@ import { Pressable, SafeAreaView, Text, View } from "react-native";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 
 import audio1 from "@assets/meditations/audio1.mp3";
+import AnimatedBackground from "@/components/AnimatedBackground";
 
 export default function MediationDetails() {
 	const { id } = useLocalSearchParams<{ id: string }>();
@@ -33,6 +34,7 @@ export default function MediationDetails() {
 
 	return (
 		<SafeAreaView className="flex-1 p-2 justify-between bg-orange-400">
+			<AnimatedBackground />
 			{/* Screen content */}
 			<View className="flex-1">
 				{/* Top part of the screen */}
