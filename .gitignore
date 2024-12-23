@@ -60,3 +60,5 @@ ios/Headspace/Supporting/Expo.plist
 ios/Headspace.xcodeproj/project.pbxproj
 ios/Headspace.xcodeproj/xcshareddata/xcschemes/Headspace.xcscheme
 ios/Headspace.xcworkspace/contents.xcworkspacedata
+android
+.env
